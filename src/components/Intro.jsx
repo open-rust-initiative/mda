@@ -1,8 +1,7 @@
 import Link from 'next/link'
 
 import { IconLink } from '@/components/IconLink'
-import { Logo } from '@/components/Logo'
-import { SignUpForm } from '@/components/SignUpForm'
+
 
 function BookIcon(props) {
   return (
@@ -35,20 +34,16 @@ function EmailIcon(props) {
 export function Intro() {
   return (
     <>
-      {/* <div>
-        <Link href="/">
-          <Logo className="inline-block h-8 w-auto" />
-        </Link>
-      </div> */}
+      
       <h1 className="mt-14 font-display text-4xl/tight font-light text-white">
         MDA 0.1.0{' '}<br/>
         <span className="text-sky-300">Data, Annotations, Versions, Together.</span>
       </h1>
       <p className="mt-4 text-sm/6 text-gray-300">
         MDA is a file format that combines training data and annotations, and allows for version control of annotations during training. It enhances the manageability of data.</p>
-      <SignUpForm />
+ 
       <div className="mt-8 flex flex-wrap justify-center gap-x-1 gap-y-3 sm:gap-x-2 lg:justify-start">
-        <IconLink href="#" icon={BookIcon} className="flex-none">
+        <IconLink href="https://github.com/open-rust-initiative/mda#mda-010---data-annotations-versions-together" icon={BookIcon} className="flex-none">
           Documentation
         </IconLink>
         <IconLink href="https://github.com/web3infra-foundation/mega/tree/main/mda" icon={GitHubIcon} className="flex-none">

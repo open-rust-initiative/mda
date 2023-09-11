@@ -3,11 +3,11 @@ import { SparkleIcon } from '@/components/SparkleIcon'
 export { Layout as default } from '@/components/Layout'
 
 ---
-## MDA File Format 0.1.0 {{ date: '2023-09-10T00:00Z' }}
+## MDA 0.1.0 {{ date: '2023-09-10T00:00Z' }}
 
 ## Introduction  
 
-Managing data during large-scale training can be challenging due to the a high volume of files, fragmented data, and diverse annotations. Additionally, the lack of traceability between training results and data can impede effective management. 
+Managing data during large-scale training can be challenging due to the a high volume of files, fragmented data, and diverse annotations. The lack of a connection between training data and its annotation data creates difficulties in data management. Additionally, not being able to keep track of data changes makes it harder to manage data effectively.
 
 To address these issues, we propose MDA, a file format that **integrates training data and their corresponding annotations**. And it also supports **version control for annotation data** during training. 
 
@@ -40,7 +40,7 @@ Figure 1: The structure of MDA file format.
 
 
   
-More details can be found in [mda_structure](#).
+More details can be found in [mda_structure](https://github.com/open-rust-initiative/mda#31-file-format-design).
 
 ### <SparkleIcon /> Data Version Control
 
@@ -53,7 +53,7 @@ The Figure 2 shows the working principles of RevAnno.
 Figure 2: The work progress of RevAnno
 
 - **Initial Storage**: RevAnno saves the complete annotated data during the first storage.
-  **Incremental Storage**: Subsequent storages only store the parts that differ from the previous version. Assuming the current version is the m-th storage, in the m+1-th storage, only the parts that are different from the previous m storages are saved, and so on. 
+- **Incremental Storage**: Subsequent storages only store the parts that differ from the previous version. Assuming the current version is the m-th storage, in the m+1-th storage, only the parts that are different from the previous m storages are saved, and so on. 
 - **Snapshot**: Periodically or upon specific events, RevAnno creates a data snapshot. The data snapshot saves the complete state of all data at that particular time, making it easy to revert to specific versions of the data. 
 
 - **Data Retrieval**: To view the complete data of a specific version, RevAnno needs to trace back to the initial version and apply the differences between each version one by one until reaching the desired version's complete data state. The following are the steps to obtain the complete data of a specific version:Retrieve the data from the initial version (usually the complete data from the first storage or snapshot data).Sequentially retrieve the differential data between each version and apply the differences to the data from the initial version. 
@@ -61,7 +61,7 @@ Figure 2: The work progress of RevAnno
 
 
 
-More details can be found in [annotation_data_version_control](#).
+More details can be found in [annotation_data_version_control](https://github.com/open-rust-initiative/mda#32-data-version-control).
 
 ### <SparkleIcon /> Mapping Training Data and Annotation Data
 
@@ -341,7 +341,7 @@ cargo run mda --action=extract --mda=tests/mda/output/combine/000001.mda --train
 ```
 
 ### <SparkleIcon /> Applying MDA to the CelebA
-We have integrated the [CelebA](https://mmlab.ie.cuhk.edu.hk/projects/CelebA.html) dataset using the MDA file. More details can be found in [test_CelebA](#).
+We have integrated the [CelebA](https://mmlab.ie.cuhk.edu.hk/projects/CelebA.html) dataset using the MDA file. More details can be found in [test_CelebA](https://github.com/open-rust-initiative/mda#5-applying-mda-to-the-celeba).
 
 ## Conclusion
 
@@ -356,11 +356,8 @@ In conclusion, MDA for managing training data and annotations addresses the chal
 - Provide a search function to the information in the header.
 - Provide data version control for training data.
 
-## Author
 
-Quanyi Ma, genedna@gmail.com, Web3 Infrastructure Foundation
 
-Yijun Chen, The Hong Kong University of Science and Technology
+## Contact
 
-## Code Repository
-MDA is implemented in Rust. More details can be found in https://github.com/web3infra-foundation/mega/tree/main/mda
+If you have any questions about MDA, you can contact genedna@gmail.com.

@@ -2,7 +2,7 @@
 
 ## 1 Introduction 
 
-Managing data during large-scale training can be challenging due to the a high volume of files, fragmented data, and diverse annotations. Additionally, the lack of traceability between training results and data can impede effective management. 
+Managing data during large-scale training can be challenging due to the a high volume of files, fragmented data, and diverse annotations. The lack of a connection between training data and its annotation data creates difficulties in data management. Additionally, not being able to keep track of data changes makes it harder to manage data effectively.
 
 To address these issues, we propose MDA, a file format that **integrates training data and their corresponding annotations**. And it also supports **version control for annotation data** during training. 
 
@@ -481,6 +481,8 @@ Output
 [WARN][2023-09-03 14:34:24] 202599 mda files have been generated in 13860.9379484s
 ```
 
+
+Note: The running time is determined by the computer's performance.
  
 
 ### 5.2 List MDA File Information
