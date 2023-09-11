@@ -1,0 +1,366 @@
+import { SparkleIcon } from '@/components/SparkleIcon'
+
+export { Layout as default } from '@/components/Layout'
+
+---
+## MDA File Format 0.1.0 {{ date: '2023-09-10T00:00Z' }}
+
+## Introduction  
+
+Managing data during large-scale training can be challenging due to the a high volume of files, fragmented data, and diverse annotations. Additionally, the lack of traceability between training results and data can impede effective management. 
+
+To address these issues, we propose MDA, a file format that **integrates training data and their corresponding annotations**. And it also supports **version control for annotation data** during training. 
+
+## Features 
+
+- Integration of training data and annotations into a single file format.
+- Support version control of annotations during training.
+- Combination of training data, annotation data, and version information into a single file, improving data management efficiency.
+- Addressing the separation between training data and annotations, enhancing research efficiency and data quality.
+- Efficient tracking and management of different versions of annotations.
+
+## Technology Details
+
+### <SparkleIcon />  File Format Design
+
+MDA is a binary file that contains the training data and all versions of its all annotation data. 
+
+MDA uses the "**.mda**" file extension, and the filename of an MDA file will match the filename of the extracted training data.
+
+MDA consists of four components: MDAIndex, MDAHeader, Training Data, and Annotation Data, as shown in Figure 1.
+
+![](@/images/file_structure.png)
+
+Figure 1: The structure of MDA file format.
+
+- MDAIndex: Record the data offset of each section in MDA. 
+- MDAHeader: Record the tags of MDA and the metadata of the training data. 
+- Training Data: Store training data.                                        
+- Annotation Data (1, 2,..., n): Store all the versions of annotation data. Annotation Data n stores the n-th group annotation data.
+
+
+  
+More details can be found in [mda_structure](#).
+
+### <SparkleIcon /> Data Version Control
+
+Build a data structure **RevAnno** to do version control of annotated data. It stores the differential content of data and implements version tracking and data storage optimization through incremental storage and data snapshots. RevAnno is designed based on the principles of **Mercurial Revlog**, aiming to reduce storage space and improve read-write efficiency.
+
+The Figure 2 shows the working principles of RevAnno.
+
+![](@/images/RevAnno.png)
+
+Figure 2: The work progress of RevAnno
+
+- **Initial Storage**: RevAnno saves the complete annotated data during the first storage.
+  **Incremental Storage**: Subsequent storages only store the parts that differ from the previous version. Assuming the current version is the m-th storage, in the m+1-th storage, only the parts that are different from the previous m storages are saved, and so on. 
+- **Snapshot**: Periodically or upon specific events, RevAnno creates a data snapshot. The data snapshot saves the complete state of all data at that particular time, making it easy to revert to specific versions of the data. 
+
+- **Data Retrieval**: To view the complete data of a specific version, RevAnno needs to trace back to the initial version and apply the differences between each version one by one until reaching the desired version's complete data state. The following are the steps to obtain the complete data of a specific version:Retrieve the data from the initial version (usually the complete data from the first storage or snapshot data).Sequentially retrieve the differential data between each version and apply the differences to the data from the initial version. 
+
+
+
+
+More details can be found in [annotation_data_version_control](#).
+
+### <SparkleIcon /> Mapping Training Data and Annotation Data
+
+MDA uses the following two method to map training data and annotation file:
+
+**1. Read Annotation Data Folder:** Match training data and annotation data from different folders by using the same names. For example, MDA map 000001.jpg with 000001.txt, 000002.jpg with 000002.txt.
+
+
+**2. Read Annotation Data File:** Read annotation data and its content line by line from the file. Each line contains an annotation data and its corresponding content.  For example:
+
+```
+The following data is part of list_bbox_celeba.txt in CelebA
+202599
+image_id x_1 y_1 width height
+000001.jpg    95  71 226 313
+000002.jpg    72  94 221 306
+000003.jpg   216  59  91 126
+...
+```
+
+There might be one or multiple annotation data, so a TOML file has been established to read this type of annotation data.
+
+Annotation data can be configured in the TOML file.
+
+- id: The "id" serves as the identifier for this group of annotation data. If the user does not specify an "id," the program will extract the filename of the annotation file to use as the "id."
+- path: Path to the annotation data.
+- start: Starting line of the annotation data.
+- end: Ending line of the annotation data.title = "mda config"
+
+For example, mda_anno_config.toml
+
+```toml
+title = "mda config"
+
+[[annotation]]
+id = "identify"
+path = "test_mda/anno/identity_CelebA.txt"
+start = 1
+end=50000
+[[annotation]]
+path = "anno/list_attr_celeba.txt"
+start = 3
+```
+
+
+## 4 User Guide
+Here are the running commands for the MDA file:
+```shell
+Usage: mega.exe mda [OPTIONS]
+
+Options:
+      --action <ACTION >            5 actions: generate, extract, list, group, version, update
+      --train <TRAIN >              Training data file/folder path
+      --anno <ANNO >                Annotation data file/folder path
+      --annos <ANNOS >              Annotation data file/folder path, separated by commas
+      --output <OUTPUT >            Output data file/folder path
+      --mda <MDA >                  MDA data file/folder path
+      --tags <TAGS >                Tags for MDA files
+      --threads <THREADS >          Maximum number of threads [default: 10]
+      --rev <REV >                  The version of MDA file [default: -1]
+      --start <START >              Read from which line of the annotation file [default: 1]
+      --end <END >                  Read from which line of the annotation file [default: 0]
+      --format <FORMAT >            The type of the annotation data: txt,json [default: txt]
+      --anno-config <ANNO_CONFIG >  Combined Annotation data config
+      --group <GROUP >              The group of the annotation data [default: NONE]
+      --mode <MODE >                The generation mode: one, multiple, combine
+  -h, --help                       Print help (see more with '--help')
+  -V, --version                    Print version
+```
+
+### <SparkleIcon /> Generate MDA Files
+![](@/images/generate_mda.png)
+
+ Generating .mda file by specifying paths for training and annotation data. 
+
+Specify --action=generate, and then choose the mode based on the situation. There are three modes: **one, multiple, and combine.** 
+- In the 'one' mode, each training data corresponds to one annotation data when annotation data is in individual files. 
+- In the 'multiple' mode, each training data corresponds to multiple annotation data when annotation data is in individual files. 
+- In the 'combine' mode, all annotation data is present in a single file.
+
+The following provides specific explanations for handling different scenarios.
+
+
+1. In the 'one' mode, each training data corresponds to one annotation data when annotation data is in individual files.
+
+​	Generate the mda file for one training data, for example:
+
+```shell
+cargo run mda --action=generate --mode=one --train=tests/mda/data/train/1.jpg --anno=tests/mda/data/anno/anno1/1.txt --output=tests/mda/output/one/  --tags=dog
+```
+
+​	Generate mda files for multiple training data within one directory, for example:
+
+```shell
+cargo run mda --action=generate --mode=one --train=tests/mda/data/train/ --anno=tests/mda/data/anno/anno1/ --output=tests/mda/output/one/  --tags=cat,dog --threads=10
+```
+
+2. In the 'multiple' mode, each training data corresponds to multiple annotation data when annotation data is in individual files. 
+   
+  Generate the mda file for one training data with multiple annotation data, for example:
+
+```shell
+cargo run mda --action=generate --mode=multiple --train=tests/mda/data/train/1.jpg --anno=tests/mda/data/anno/anno1/1.txt,tests/mda/data/anno/anno2/1.txt --output=tests/mda/output/one/  --tags=dog
+```
+
+​		Generate mda files for multiple training data with multiple annotation data within one directory, for example:
+
+```shell
+cargo run mda --action=generate --mode=multiple --train=tests/mda/data/train/ --annos=tests/mda/data/anno/anno1/,tests/mda/data/anno/anno2/,tests/mda/data/anno/anno3/ --output=tests/mda/output/multiple/
+```
+
+3. In the 'combine' mode, all annotation data is present in a single file.
+
+   For example:
+
+```shell
+cargo run mda --action=generate --mode=combine  --train=tests/mda/celeba/train/ --anno-config=tests/mda/celeba/mda_config.toml --output=tests/mda/output/combine/  --tags=face  --threads=10
+```
+
+-–anno-config record the information of the annotation data, for example:
+
+```toml
+title = "mda config"
+
+[[annotation]]
+id = "identify"
+path = "anno/identity_CelebA.txt"
+start = 1
+end=51
+
+[[annotation]]
+id = "landmarks"
+path = "anno/list_landmarks_celeba.txt"
+start=3
+end=53
+```
+
+### <SparkleIcon /> List MDA File Information
+
+**List Annotation Group**
+
+![](@/images/list_groups.png)
+
+List all groups of annotation data. 
+
+For example:
+
+```shell
+cargo run mda --action=group --mda=tests/mda/output/combine/000001.mda
+```
+
+Output: 
+
+```shell
+List the 4 different groups annotation data for this training data
++----+------------------+
+| ID | Annotation Group |
++----+------------------+
+| 1  | identify         |
++----+------------------+
+| 2  | list_attr_celeba |
++----+------------------+
+| 3  | list_bbox_celeba |
++----+------------------+
+| 4  | landmarks        |
++----+------------------+
+```
+
+**List Tags and MetaData**
+
+![](@/images/list_metadata.png)
+
+List data information from .mda file. Get the basic information of the training data and get the versions of the annotation data. 
+
+For example:
+
+```shell
+cargo run mda --action=list --mda=tests/mda/output/combine/000001.mda
+```
+Output
+
+```shell
++-------------------------------------+-------------------+----------------------+------+--------------------------------------------------------------------------+
+| MDA File                            | MDA Header Offset | Training Data Offset | Tags | Training MetaData                                                        |
++-------------------------------------+-------------------+----------------------+------+--------------------------------------------------------------------------+
+| tests/mda/output/combine/000001.mda | 169               | 282                  | face | ImageMetaData { size: (178, 218), channel_count: 3, color_space: "RGB" } |
++-------------------------------------+-------------------+----------------------+------+--------------------------------------------------------------------------+
+```
+For example:
+
+```shell
+cargo run mda --action=list --mda=tests/mda/output/combine/
+```
+
+Output
+
+```shell
++-------------------------------------+-------------------+----------------------+------+--------------------------------------------------------------------------+
+| MDA File                            | MDA Header Offset | Training Data Offset | Tags | Training MetaData                                                        |
++-------------------------------------+-------------------+----------------------+------+--------------------------------------------------------------------------+
+| tests/mda/output/combine/000001.mda | 169               | 282                  | face | ImageMetaData { size: (178, 218), channel_count: 3, color_space: "RGB" } |
++-------------------------------------+-------------------+----------------------+------+--------------------------------------------------------------------------+
+| tests/mda/output/combine/000002.mda | 169               | 282                  | face | ImageMetaData { size: (178, 218), channel_count: 3, color_space: "RGB" } |
++-------------------------------------+-------------------+----------------------+------+--------------------------------------------------------------------------+
+| tests/mda/output/combine/000003.mda | 169               | 282                  | face | ImageMetaData { size: (178, 218), channel_count: 3, color_space: "RGB" } |
++-------------------------------------+-------------------+----------------------+------+--------------------------------------------------------------------------+
+…
+```
+
+**List Versions**
+
+![](@/images/list_versions.png)
+
+List all versions of the targeted annotation data.  
+
+For example:
+
+```shell
+cargo run mda --action=version --mda=tests/mda/output/combine/000001.mda --group="landmarks"
+```
+
+Output
+
+```shell
+Data Version for "tests/mda/output/one/1.mda", anno group: "anno1"
++-----+--------+--------+
+| rev | offset | length |
++-----+--------+--------+
+| 0   | 131932 | 114    |
++-----+--------+--------+
+| 1   | 132046 | 132    |
++-----+--------+--------+
+| 2   | 132178 | 163    |
++-----+--------+--------+
+| 3   | 132341 | 94     |
++-----+--------+--------+
+```
+
+### <SparkleIcon /> Update MDA Files
+
+![](@/images/update_mda.png)
+
+Update .mda file. To update the mda file, specify the modified training data path, annotation data path, and the path of the previous version of the .mda file.
+
+
+
+Update one mda file, for example:
+
+```shell
+cargo run mda --action=update --mda=tests/mda/output/one/1.mda  --anno=tests/mda/data/anno/anno1/1.txt --group="anno1"
+```
+
+Update some mda files in a directory, for example:
+
+```shell
+cargo run mda --action=update --mda=tests/mda/output/one/  --anno=tests/mda/data/anno/anno1/ --group="anno1"
+```
+
+Update some annotation data in annotation combined case, for example:
+
+```shell
+cargo run mda --action=update --mda=tests/mda/output/one/  --anno=tests/mda/data/anno/anno1/ --group="anno1"
+```
+
+
+
+### <SparkleIcon /> Extract MDA Files
+
+![](@/images/extract_mda.png)
+
+Extract data from .mda file. The training data and annotation data can be extracted from the MDA file. The previous version of annotation data can also be extracted. 
+
+Extract training data and annotation data. If users do not assign the version, it will extract the latest version of the data. For example:
+
+```shell
+cargo run mda --action=extract --mda=tests/mda/output/combine/000001.mda --train=tests/mda/extract/train/ --anno=tests/mda/extract/anno/  --group=list_attr_celeba 
+```
+
+### <SparkleIcon /> Applying MDA to the CelebA
+We have integrated the [CelebA](https://mmlab.ie.cuhk.edu.hk/projects/CelebA.html) dataset using the MDA file. More details can be found in [test_CelebA](#).
+
+## Conclusion
+
+### <SparkleIcon /> Contribution
+
+In conclusion, MDA for managing training data and annotations addresses the challenges faced during large-scale model training. By integrating training data, annotation data, and annotation data version information into a single file, we establish a clear correlation between the training data and its annotations, enhancing the overall efficiency and intuitiveness of data management.
+
+### <SparkleIcon /> Future Work
+
+- Refine the rules for slicing data in version control.
+- Optimize the processing speed of a large number of MDA files.
+- Provide a search function to the information in the header.
+- Provide data version control for training data.
+
+## Author
+
+Quanyi Ma, genedna@gmail.com, Web3 Infrastructure Foundation
+
+Yijun Chen, The Hong Kong University of Science and Technology
+
+## Code Repository
+MDA is implemented in Rust. More details can be found in https://github.com/web3infra-foundation/mega/tree/main/mda
