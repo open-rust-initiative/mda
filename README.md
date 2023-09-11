@@ -22,29 +22,29 @@ The MDA is implemented in Rust. MDA is a binary file that contains the training 
 
 The file format design of MDA is shown in the figure.
 
-![img](assets\r6VFnpW-I9_bZ__p6IQyC4wR14fyAZ7vVFKHl6ItfM23ccst9qJESJUBCJkawOzVRrZM0kwG7AWgMjVg6yk2TVLDdwxsSH2EwreTmq6ekh8P4b9ROhNBeouxF0c7Ym3IbTtmjaFVe_FZ72ZikqZGaA.png)
+![img](https://github.com/open-rust-initiative/mda/blob/main/assets/r6VFnpW-I9_bZ__p6IQyC4wR14fyAZ7vVFKHl6ItfM23ccst9qJESJUBCJkawOzVRrZM0kwG7AWgMjVg6yk2TVLDdwxsSH2EwreTmq6ekh8P4b9ROhNBeouxF0c7Ym3IbTtmjaFVe_FZ72ZikqZGaA.png?raw=true)
 
 **MDA consists of four components: MDAIndex, MDAHeader, Training Data, and Annotation Data:**
 
 1. **MDAIndex**: The index module records the data offset of each section in the binary file. This design aims to locate and access specific modules quickly.
 
-![image-20230911135403622](assets\image-20230911135403622.png)
+![image-20230911135403622](https://github.com/open-rust-initiative/mda/blob/main/assets/image-20230911135403622.png?raw=true)
 
 annotations_offset records multiple sets of AnnoOffset, capturing the data offsets of different annotation data.
 
-![image-20230911135434488](assets\image-20230911135434488.png)
+![image-20230911135434488](https://github.com/open-rust-initiative/mda/blob/main/assets/image-20230911135434488.png?raw=true)
 
 The following figure presents the specific design of MDAIndex.
 
-![img](assets\myY1LeW0whNCKj8eGVF-Wdq-03_HJNzahk761D0jk5DiTonrG1hUy2vFvqx91v-k3PSSiVrKRDLIu0UCQEQ44zkMxdq_g-U24aF4q2Eb7o9PAMZ4IXISxAbv1TdYMDhw6ntNqwJWnCRtrigUukTF9w.png)
+![img](https://github.com/open-rust-initiative/mda/blob/main/assets/myY1LeW0whNCKj8eGVF-Wdq-03_HJNzahk761D0jk5DiTonrG1hUy2vFvqx91v-k3PSSiVrKRDLIu0UCQEQ44zkMxdq_g-U24aF4q2Eb7o9PAMZ4IXISxAbv1TdYMDhw6ntNqwJWnCRtrigUukTF9w.png?raw=true)
 
 2. **MDAHeader**: The module records index information, labels, training data types, metadata, and other content. 
 
-![image-20230911135515676](assets\image-20230911135515676.png)
+![image-20230911135515676](https://github.com/open-rust-initiative/mda/blob/main/assets/image-20230911135509423.png?raw=true)
 
 The following figure presents the specific design of MDAHeader.
 
-![img](assets\EucZJh-k90OZyjRP99zkyqjG9I6B8S8mNmPDG7QoDmVtBxOTe1gUuBB5AXO-wdLRE4TygzhWiJ5GcXr2sLTE5Us3l8pMOaIg7C3hchgJ4qmeDLezL15fMoJ6KbGQs2pk8o2CNv9wcB69h_qi2cNjwQ.png)
+![img](https://github.com/open-rust-initiative/mda/blob/main/assets/EucZJh-k90OZyjRP99zkyqjG9I6B8S8mNmPDG7QoDmVtBxOTe1gUuBB5AXO-wdLRE4TygzhWiJ5GcXr2sLTE5Us3l8pMOaIg7C3hchgJ4qmeDLezL15fMoJ6KbGQs2pk8o2CNv9wcB69h_qi2cNjwQ.png?raw=true)
 
 
 
@@ -60,7 +60,7 @@ Build a data structure RevAnno to do version control of annotated data. It store
 
 #### 3.2.2 Working Principles
 
-The figure shows the working principles of RevAnno.![img](assets\TGMrfL76RV05bzoh7g7WvdBgmS8jk3NkPK9aCo8spNeve-PTN2HgM1CFAMmjDXAEgtILC8mgrnLuBlLM_FJdRunVfnMNKKxtiRX05TkNBMFD71nKqpp0fDFmpU-N0njXc6I9KhaVjsc8zs72iAA9rA.png)
+The figure shows the working principles of RevAnno.![img](https://github.com/open-rust-initiative/mda/blob/main/assets/TGMrfL76RV05bzoh7g7WvdBgmS8jk3NkPK9aCo8spNeve-PTN2HgM1CFAMmjDXAEgtILC8mgrnLuBlLM_FJdRunVfnMNKKxtiRX05TkNBMFD71nKqpp0fDFmpU-N0njXc6I9KhaVjsc8zs72iAA9rA.png?raw=true)
 **Initial Storage**: RevAnno saves the complete annotated data during the first storage.
 **Incremental Storage**: Subsequent storages only store the parts that differ from the previous version. Assuming the current version is the m-th storage, in the m+1-th storage, only the parts that are different from the previous m storages are saved, and so on. 
 
@@ -70,7 +70,7 @@ The figure shows the working principles of RevAnno.![img](assets\TGMrfL76RV05bzo
 
 #### 3.2.3 RevAnno Version Control
 
-![image-20230911134627546](assets\image-20230911134627546.png)
+![image-20230911134627546](https://github.com/open-rust-initiative/mda/blob/main/assets/image-20230911134627546.png?raw=true)
 
 Input data at rev=0:
 
@@ -101,12 +101,12 @@ Input data at rev=m+1:
 2. Compare the new DataBlocks with the existing ones (rev=m), and store only the different DataBlocks.
 3. Generate RevAnnoEntry and RevAnnoHeader.
 
-#### ![img](assets\PDGaQYmOfDt10_MYaf_ROKPLqtDvX64ZvXljE7pe0fWssoklWu7Sf1WsHFjI9YcB5pwnWf7n2JK7fRjHZETP2H3pw3VXxXLLpUWQ3EjGIUbLxWiCwYnUxm9UFec-cRd3iQrosfvHOjFjZv-knXbs-w.png)![img](assets\PE5CZ0M6nSfe-06ECDJgHpfQNft0jakF9PmKZArHwR_otnG230xpskAZQU89rcdxPS5qoyWW1hAeOugbqqb3eintlujtZsl8RgMV_JH-yabqyeBccSzFB5ALGwbHOf24ctRBFmBajzIPhRfV4JusLQ.png) **3.3.4 File Read and Write** 
+#### ![img](https://github.com/open-rust-initiative/mda/blob/main/assets/PDGaQYmOfDt10_MYaf_ROKPLqtDvX64ZvXljE7pe0fWssoklWu7Sf1WsHFjI9YcB5pwnWf7n2JK7fRjHZETP2H3pw3VXxXLLpUWQ3EjGIUbLxWiCwYnUxm9UFec-cRd3iQrosfvHOjFjZv-knXbs-w.png?raw=true)![img](https://github.com/open-rust-initiative/mda/blob/main/assets/PE5CZ0M6nSfe-06ECDJgHpfQNft0jakF9PmKZArHwR_otnG230xpskAZQU89rcdxPS5qoyWW1hAeOugbqqb3eintlujtZsl8RgMV_JH-yabqyeBccSzFB5ALGwbHOf24ctRBFmBajzIPhRfV4JusLQ.png?raw=true) **3.3.4 File Read and Write** 
 
 **When writing to an MDA file**, the process involves first writing the rev_anno_entries to the MDA file, recording the offset of each entry. Then, the rev_anno_headers are updated and written to the MDA file. The MDA file's header is also updated to include the offsets of rev_anno_headers and rev_anno_entries. 
 
 **When reading the file**, the procedure starts by using MDAIndex's rev_anno_headers to extract the header data of rev_anno. Next, the required headers are calculated, and using the offset information in the headers, the corresponding entries are located, and the data is merged and restored accordingly.
-![img](assets\IfqD4eW_8igWvHY8hq__lbkfHjNHt_ejIXkPoc-dpMINXMVgJkg8HT-PhkSK2wg3Sx7rlXH9wigZuB9TLTc5ank9QubB5WGu3XBUG3CHsxiYS64YaGQjS54j1xW_Cu7WcjqMbFZEYDwtuxqv0NOCbg.png)
+![img](https://github.com/open-rust-initiative/mda/blob/main/assets/IfqD4eW_8igWvHY8hq__lbkfHjNHt_ejIXkPoc-dpMINXMVgJkg8HT-PhkSK2wg3Sx7rlXH9wigZuB9TLTc5ank9QubB5WGu3XBUG3CHsxiYS64YaGQjS54j1xW_Cu7WcjqMbFZEYDwtuxqv0NOCbg.png?raw=true)
 
 ### 3.3 Mapping Training Data and Annotation Data
 
