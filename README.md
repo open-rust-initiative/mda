@@ -235,9 +235,16 @@ Options:
 
 ### 4.1 Generate MDA Files
 
- Generating .mda file by specifying paths for training and annotation data. There are three types of generation:
+Generating .mda file by specifying paths for training and annotation data.
 
-1. Annotation data and training data are in separate folders, with one annotation data corresponding to one training data.
+Specify --action=generate, and then choose the mode based on the situation. There are three modes: one, multiple, and combine.
+
+- In the 'one' mode, each training data corresponds to one annotation data when annotation data is in individual files.
+- In the 'multiple' mode, each training data corresponds to multiple annotation data when annotation data is in individual files.
+- In the 'combine' mode, all annotation data is present in a single file.
+The following provides specific explanations for handling different scenarios.
+
+1. In the 'one' mode, each training data corresponds to one annotation data when annotation data is in individual files.
 
 	Generate the mda file for one training data, for example:
 
@@ -251,7 +258,7 @@ Generate mda files for multiple training data within one directory, for example:
 cargo run mda --action=generate --mode=one --train=tests/mda/data/train/ --anno=tests/mda/data/anno/anno1/ --output=tests/mda/output/one/  --tags=cat,dog --threads=10
 ```
 
-2. Annotation data and training data are in separate folders, with one training data corresponding to multiple annotation data.
+2. In the 'multiple' mode, each training data corresponds to multiple annotation data when annotation data is in individual files.
    Generate the mda file for one training data with multiple annotation data, for example:
 
 ```shell
@@ -264,7 +271,7 @@ cargo run mda --action=generate --mode=one --train=tests/mda/data/train/1.jpg --
 cargo run mda --action=generate --mode=multiple --train=tests/mda/data/train/ --annos=tests/mda/data/anno/anno1/,tests/mda/data/anno/anno2/,tests/mda/data/anno/anno3/ --output=tests/mda/output/multiple/
 ```
 
-3. Annotation data is all in one file, with one training data corresponding to one or multiple annotation data files.
+3. In the 'combine' mode, all annotation data is present in a single file.
    For example:
 
 ```shell
