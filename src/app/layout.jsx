@@ -1,10 +1,14 @@
 import { Inter } from 'next/font/google'
 import localFont from 'next/font/local'
+import Script from 'next/script'
+
 import clsx from 'clsx'
 
 import { Providers } from '@/app/providers'
 
 import '@/styles/tailwind.css'
+
+const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_MEASUREMENT_ID;
 
 const inter = Inter({
   subsets: ['latin'],
@@ -37,6 +41,19 @@ export default function RootLayout({ children }) {
       className={clsx('h-full antialiased', inter.variable, monaSans.variable)}
       suppressHydrationWarning
     >
+      <Script
+        src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+        strategy="afterInteractive"
+      />
+      <Script id="google-analytics" strategy="afterInteractive">
+        {`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){window.dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', '${GA_MEASUREMENT_ID}');
+        `}
+      </Script>
+
       <body className="flex min-h-full flex-col bg-white dark:bg-gray-950">
         <Providers>{children}</Providers>
       </body>
